@@ -30,7 +30,8 @@ const formatTaskDate = (timestamp) => {
 
 export const Tasks = () => {
   const { apiKey } = useStore();
-  const { data: tasks, isLoading, isError, error } = useTasks(apiKey);
+  const { data, isLoading, isError, error } = useTasks(apiKey);
+  const tasks = data?.tasks;
 
   if (!apiKey) {
     return (

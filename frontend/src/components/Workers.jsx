@@ -40,9 +40,16 @@ export const Workers = () => {
   const activeWorkers = workers?.filter(worker => worker.onDuty) || [];
   const inactiveWorkers = workers?.filter(worker => !worker.onDuty) || [];
 
+  const logWorkers = () => {
+    console.log('Workers data:', workers);
+  }
+
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Workers / Drivers</h2>
+      <button onClick={logWorkers} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        Log Workers Data
+      </button>
       
       {workers && workers.length > 0 ? (
         <div className="space-y-6">

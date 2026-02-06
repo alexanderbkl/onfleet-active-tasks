@@ -1,12 +1,29 @@
-const express = require('express');
-const cors = require('cors');
-const Onfleet = require('@onfleet/node-onfleet');
+import express from 'express';
+import cors from 'cors';
+import axios from 'axios';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Onfleet API base URL
+const ONFLEET_API_URL = 'https://onfleet.com/api/v2';
+
+// Helper function to create Onfleet API client
+const createOnfleetClient = (apiKey) => {
+  return axios.create({
+    baseURL: ONFLEET_API_URL,
+    auth: {
+      username: apiKey,
+      password: ''
+    },
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -22,15 +39,15 @@ app.post('/api/teams', async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    const onfleet = new Onfleet(apiKey);
-    const teams = await onfleet.teams.get();
+    const client = createOnfleetClient(apiKey);
+    const response = await client.get('/teams');
     
-    res.json(teams);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error fetching teams:', error);
-    res.status(500).json({ 
+    console.error('Error fetching teams:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ 
       error: 'Failed to fetch teams',
-      message: error.message 
+      message: error.response?.data?.message || error.message 
     });
   }
 });
@@ -44,15 +61,15 @@ app.post('/api/workers', async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    const onfleet = new Onfleet(apiKey);
-    const workers = await onfleet.workers.get();
+    const client = createOnfleetClient(apiKey);
+    const response = await client.get('/workers');
     
-    res.json(workers);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error fetching workers:', error);
-    res.status(500).json({ 
+    console.error('Error fetching workers:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ 
       error: 'Failed to fetch workers',
-      message: error.message 
+      message: error.response?.data?.message || error.message 
     });
   }
 });
@@ -66,23 +83,25 @@ app.post('/api/tasks', async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    const onfleet = new Onfleet(apiKey);
+    const client = createOnfleetClient(apiKey);
     
     // Get tasks within a time range (default: last 7 days)
     const toDate = to || Date.now();
     const fromDate = from || (toDate - 7 * 24 * 60 * 60 * 1000);
     
-    const tasks = await onfleet.tasks.get({
-      from: fromDate,
-      to: toDate
+    const response = await client.get('/tasks/all', {
+      params: {
+        from: fromDate,
+        to: toDate
+      }
     });
     
-    res.json(tasks);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error fetching tasks:', error);
-    res.status(500).json({ 
+    console.error('Error fetching tasks:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ 
       error: 'Failed to fetch tasks',
-      message: error.message 
+      message: error.response?.data?.message || error.message 
     });
   }
 });
@@ -97,15 +116,15 @@ app.post('/api/tasks/:id', async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    const onfleet = new Onfleet(apiKey);
-    const task = await onfleet.tasks.get(id);
+    const client = createOnfleetClient(apiKey);
+    const response = await client.get(`/tasks/${id}`);
     
-    res.json(task);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error fetching task:', error);
-    res.status(500).json({ 
+    console.error('Error fetching task:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ 
       error: 'Failed to fetch task',
-      message: error.message 
+      message: error.response?.data?.message || error.message 
     });
   }
 });
@@ -120,15 +139,15 @@ app.post('/api/workers/:id', async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    const onfleet = new Onfleet(apiKey);
-    const worker = await onfleet.workers.get(id);
+    const client = createOnfleetClient(apiKey);
+    const response = await client.get(`/workers/${id}`);
     
-    res.json(worker);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error fetching worker:', error);
-    res.status(500).json({ 
+    console.error('Error fetching worker:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ 
       error: 'Failed to fetch worker',
-      message: error.message 
+      message: error.response?.data?.message || error.message 
     });
   }
 });

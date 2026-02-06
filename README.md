@@ -24,7 +24,7 @@ A full-stack application to manage and monitor Onfleet teams, workers, and tasks
 ### Backend
 - **Node.js** - Runtime environment
 - **Express** - Web framework
-- **@onfleet/node-onfleet** - Official Onfleet SDK
+- **Axios** - HTTP client for Onfleet REST API
 - **CORS** - Cross-origin resource sharing
 
 ## 📋 Prerequisites
@@ -151,9 +151,58 @@ onfleet-active-tasks/
 
 **Important**: Never commit your API keys to version control. The `.env` files are gitignored by default.
 
+## 🐛 Troubleshooting
+
+### Backend Issues
+
+**Server won't start:**
+- Check if port 3001 is already in use: `lsof -i :3001` (Mac/Linux) or `netstat -ano | findstr :3001` (Windows)
+- Try a different port by setting `PORT` environment variable: `PORT=3002 npm run server`
+
+**"Error fetching teams/workers/tasks":**
+- Verify your Onfleet API key is correct
+- Check the backend console for detailed error messages
+- Ensure you have proper permissions for the Onfleet API resources
+
+### Frontend Issues
+
+**Styles not loading:**
+- Clear your browser cache
+- Restart the dev server
+- Check that Tailwind CSS is properly configured
+
+**API key not persisting:**
+- Check browser's local storage
+- Ensure JavaScript is enabled
+- Try a different browser
+
+**CORS errors:**
+- Ensure the backend server is running
+- Check that CORS is properly configured in `backend/server.js`
+- Verify the API URL in the frontend matches the backend URL
+
+## ❓ FAQ
+
+**Q: Do I need to install the @onfleet/node-onfleet package?**  
+A: No, the application uses the Onfleet REST API directly via Axios for better compatibility.
+
+**Q: Can I use this in production?**  
+A: This is primarily a development/admin tool. For production use, you should:
+- Add proper authentication and authorization
+- Implement rate limiting
+- Use environment variables for sensitive data
+- Add HTTPS/SSL
+- Implement proper error logging
+
+**Q: How do I get an Onfleet API key?**  
+A: Log in to your Onfleet dashboard and navigate to Settings → API & Webhooks to generate an API key.
+
+**Q: Can I customize the time range for tasks?**  
+A: Currently, tasks are fetched for the last 7 days. You can modify the `from` and `to` parameters in the API call to change this.
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📝 License
 

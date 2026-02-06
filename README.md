@@ -152,14 +152,32 @@ onfleet-active-tasks/
 
 ```
 
-## 🔒 Security Notes
+## 🔒 Security
 
-- The API key is stored in browser's local storage (via Zustand persist)
-- API key is transmitted to the backend via POST requests (not in URLs)
-- Backend validates API key presence before making Onfleet API calls
-- CORS is enabled for local development
+### Security Audit Status
 
-**Important**: Never commit your API keys to version control. The `.env` files are gitignored by default.
+✅ **Last Audit:** February 6, 2026  
+✅ **Status:** No leaked credentials or secrets detected  
+✅ **Git History:** Clean (verified)
+
+A comprehensive security audit has been performed on this repository. See [SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md) for complete findings and [SECURITY_RECOMMENDATIONS.md](SECURITY_RECOMMENDATIONS.md) for implementation guidance.
+
+### Security Best Practices
+
+- ⚠️ **API keys are stored in browser's localStorage** - Clear when using shared computers
+- ✅ API keys transmitted via POST request body (not in URLs)
+- ✅ Backend validates API key presence before making API calls
+- ✅ CORS configured for local development
+- ✅ No credentials committed to version control
+- ✅ `.env` files properly gitignored
+
+### Important Security Notes
+
+**Never commit your API keys to version control.** The `.env` files are gitignored by default.
+
+**Using shared computers?** Clear your API key after use (click the "Clear" button).
+
+**Production deployment?** Review [SECURITY_RECOMMENDATIONS.md](SECURITY_RECOMMENDATIONS.md) for hardening steps including CORS restrictions, rate limiting, and error message sanitization.
 
 ## 🐛 Troubleshooting
 

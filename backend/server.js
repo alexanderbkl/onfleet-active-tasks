@@ -52,7 +52,7 @@ app.post('/api/teams', async (req, res) => {
   }
 });
 
-// Get workers
+// Get workers with task counts
 app.post('/api/workers', async (req, res) => {
   try {
     const { apiKey } = req.body;
@@ -64,11 +64,57 @@ app.post('/api/workers', async (req, res) => {
     const client = createOnfleetClient(apiKey);
     const response = await client.get('/workers');
     
-    res.json(response.data);
+    // Enhance workers with task counts
+    const workersWithTasks = await Promise.all(
+      response.data.map(async (worker) => {
+        try {
+          // Fetch tasks for this worker
+          const tasksResponse = await client.get(`/workers/${worker.id}/tasks`);
+          return {
+            ...worker,
+            tasks: tasksResponse.data || [],
+            taskCount: tasksResponse.data?.length || 0
+          };
+        } catch (error) {
+          // If fetching tasks fails, return worker with empty tasks
+          console.error(`Error fetching tasks for worker ${worker.id}:`, error.message);
+          return {
+            ...worker,
+            tasks: [],
+            taskCount: 0
+          };
+        }
+      })
+    );
+    
+    res.json(workersWithTasks);
   } catch (error) {
     console.error('Error fetching workers:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({ 
       error: 'Failed to fetch workers',
+      message: error.response?.data?.message || error.message 
+    });
+  }
+});
+
+// Get tasks for a specific worker
+app.post('/api/workers/:id/tasks', async (req, res) => {
+  try {
+    const { apiKey } = req.body;
+    const { id } = req.params;
+    
+    if (!apiKey) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
+
+    const client = createOnfleetClient(apiKey);
+    const response = await client.get(`/workers/${id}/tasks`);
+    
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching worker tasks:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ 
+      error: 'Failed to fetch worker tasks',
       message: error.response?.data?.message || error.message 
     });
   }

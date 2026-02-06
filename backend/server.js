@@ -74,12 +74,16 @@ app.post('/api/workers', async (req, res) => {
       return res.json(response.data);
     }
     
-    // Fetch tasks for each worker sequentially to avoid rate limiting
+    // Filter to only active (on duty) workers before fetching tasks
+    const activeWorkers = response.data.filter(worker => worker.onDuty);
+    const inactiveWorkers = response.data.filter(worker => !worker.onDuty);
+    
+    // Fetch tasks only for active workers sequentially to avoid rate limiting
     const workersWithTasks = [];
     const DELAY_BETWEEN_REQUESTS = 100; // 100ms delay between requests
     const MAX_RETRIES = 3;
     
-    for (const worker of response.data) {
+    for (const worker of activeWorkers) {
       let retries = 0;
       let success = false;
       
@@ -95,7 +99,7 @@ app.post('/api/workers', async (req, res) => {
           success = true;
           
           // Add delay between requests to avoid rate limiting
-          if (workersWithTasks.length < response.data.length) {
+          if (workersWithTasks.length < activeWorkers.length) {
             await delay(DELAY_BETWEEN_REQUESTS);
           }
         } catch (error) {
@@ -129,7 +133,17 @@ app.post('/api/workers', async (req, res) => {
       }
     }
     
-    res.json(workersWithTasks);
+    // Add inactive workers without fetching their tasks
+    const inactiveWorkersWithoutTasks = inactiveWorkers.map(worker => ({
+      ...worker,
+      tasks: [],
+      taskCount: 0
+    }));
+    
+    // Combine active workers (with tasks) and inactive workers (without tasks)
+    const allWorkers = [...workersWithTasks, ...inactiveWorkersWithoutTasks];
+    
+    res.json(allWorkers);
   } catch (error) {
     console.error('Error fetching workers:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({ 

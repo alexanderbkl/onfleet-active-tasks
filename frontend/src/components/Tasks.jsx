@@ -16,16 +16,28 @@ const formatTaskDate = (timestamp) => {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
   
-  // If today, show time
+  // If today, show time only
   if (diffDays === 0) {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
   // If within last 7 days, show day and time
   else if (diffDays < 7) {
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   }
-  // Otherwise show full date
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  // Otherwise show full date and time
+  return date.toLocaleString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
 };
 
 export const Tasks = () => {

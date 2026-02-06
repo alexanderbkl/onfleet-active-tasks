@@ -167,7 +167,9 @@ export const Workers = () => {
                             <p className="text-xs text-gray-600">{worker.userData.platform || 'N/A'}</p>
                             {worker.userData.deviceDescription && (
                               <p className="text-xs text-gray-500 truncate" title={worker.userData.deviceDescription}>
-                                {worker.userData.deviceDescription.split('(')[0]}
+                                {worker.userData.deviceDescription.includes('(') 
+                                  ? worker.userData.deviceDescription.split('(')[0].trim()
+                                  : worker.userData.deviceDescription}
                               </p>
                             )}
                           </div>

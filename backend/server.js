@@ -55,7 +55,7 @@ app.post('/api/teams', async (req, res) => {
 // Get workers with task counts
 app.post('/api/workers', async (req, res) => {
   try {
-    const { apiKey } = req.body;
+    const { apiKey, includeTaskCounts = true } = req.body;
     
     if (!apiKey) {
       return res.status(400).json({ error: 'API key is required' });
@@ -64,7 +64,14 @@ app.post('/api/workers', async (req, res) => {
     const client = createOnfleetClient(apiKey);
     const response = await client.get('/workers');
     
-    // Enhance workers with task counts
+    // Optionally enhance workers with task counts
+    // Note: This makes parallel API calls (one per worker) which may hit rate limits with many workers
+    // To skip task fetching, pass includeTaskCounts: false in request body
+    if (!includeTaskCounts) {
+      return res.json(response.data);
+    }
+    
+    // Fetch tasks for each worker in parallel (Promise.all)
     const workersWithTasks = await Promise.all(
       response.data.map(async (worker) => {
         try {

@@ -6,10 +6,16 @@ A full-stack application to manage and monitor Onfleet teams, workers, and tasks
 
 - **API Key Management**: Securely input and store Onfleet API key in the frontend
 - **Teams Overview**: View all teams with worker and manager counts
-- **Workers Dashboard**: Monitor active and inactive drivers with their current status
+- **Enhanced Workers Dashboard**: 
+  - **3-tier categorization**: Active & Working, On Duty - Available, Off Duty
+  - **Accurate task counts**: Fetches real task data from Onfleet API
+  - **Rich information**: Battery levels, location (with Google Maps links), device info, vehicle details
+  - **Real-time relative timestamps**: "5m ago", "2h ago" for last seen
+  - **Color-coded status indicators**: Green (active), Yellow (available), Gray (off duty)
+  - **Refresh functionality**: Manual data updates on demand
 - **Tasks Management**: Track tasks across different states (Unassigned, Assigned, Active, Completed)
 - **Real-time Updates**: Built with React Query for efficient data fetching and caching
-- **Responsive Design**: Beautiful UI built with Tailwind CSS
+- **Responsive Design**: Beautiful UI built with Tailwind CSS v4
 
 ## 🛠️ Tech Stack
 
@@ -199,6 +205,15 @@ A: Log in to your Onfleet dashboard and navigate to Settings → API & Webhooks 
 
 **Q: Can I customize the time range for tasks?**  
 A: Currently, tasks are fetched for the last 7 days. You can modify the `from` and `to` parameters in the API call to change this.
+
+**Q: Why do workers now show accurate task counts?**  
+A: The application now fetches tasks using the `/workers/:id/tasks` endpoint as documented in the [Onfleet API](https://docs.onfleet.com/reference/list-workers-assigned-tasks), providing real task data instead of the empty array from the basic `/workers` endpoint.
+
+## 📚 Additional Documentation
+
+- **[WORKER_ENHANCEMENTS.md](WORKER_ENHANCEMENTS.md)** - Detailed guide on worker display enhancements
+- **[UI_MOCKUP.md](UI_MOCKUP.md)** - Visual specifications and UI examples
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Complete before/after comparison
 
 ## 🤝 Contributing
 

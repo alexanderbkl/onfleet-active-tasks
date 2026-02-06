@@ -8,10 +8,29 @@ const STATUS_COLORS = {
   3: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
 };
 
+const formatTaskDate = (timestamp) => {
+  if (!timestamp) return 'N/A';
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+  
+  // If today, show time
+  if (diffDays === 0) {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+  // If within last 7 days, show day and time
+  else if (diffDays < 7) {
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  // Otherwise show full date
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
 export const Tasks = () => {
   const { apiKey } = useStore();
-  const { data, isLoading, isError, error } = useTasks(apiKey);
-  const tasks = data?.tasks;
+  const { data: tasks, isLoading, isError, error } = useTasks(apiKey);
 
   if (!apiKey) {
     return (
@@ -57,6 +76,11 @@ export const Tasks = () => {
     acc[status].push(task);
     return acc;
   }, {}) || {};
+  
+  // Sort tasks within each group by timeCreated (newest first)
+  Object.keys(groupedTasks).forEach(status => {
+    groupedTasks[status].sort((a, b) => (b.timeCreated || 0) - (a.timeCreated || 0));
+  });
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
@@ -106,7 +130,7 @@ export const Tasks = () => {
                           )}
                           
                           <div className="text-xs text-gray-500 mt-2">
-                            Created: {new Date(task.timeCreated).toLocaleString()}
+                            Created: {formatTaskDate(task.timeCreated)}
                           </div>
                         </div>
                       </div>

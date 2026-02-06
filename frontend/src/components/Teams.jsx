@@ -37,13 +37,20 @@ export const Teams = () => {
     );
   }
 
+  // Sort teams by number of workers (descending - most workers first)
+  const sortedTeams = teams ? [...teams].sort((a, b) => {
+    const aWorkers = a.workers?.length || 0;
+    const bWorkers = b.workers?.length || 0;
+    return bWorkers - aWorkers;
+  }) : [];
+
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Teams</h2>
       
-      {teams && teams.length > 0 ? (
+      {sortedTeams && sortedTeams.length > 0 ? (
         <div className="space-y-4">
-          {teams.map((team) => (
+          {sortedTeams.map((team) => (
             <div key={team.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
               <div className="flex items-center justify-between">
                 <div>

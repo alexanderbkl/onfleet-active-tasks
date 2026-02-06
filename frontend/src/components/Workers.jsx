@@ -79,9 +79,17 @@ export const Workers = () => {
   const activeWorkers = workers?.filter(worker => worker.onDuty) || [];
   const inactiveWorkers = workers?.filter(worker => !worker.onDuty) || [];
   
+  // Sort workers by timeLastSeen (descending - most recent first)
+  const sortByLastSeen = (a, b) => {
+    const aTime = a.timeLastSeen || 0;
+    const bTime = b.timeLastSeen || 0;
+    return bTime - aTime; // Descending order (most recent first)
+  };
+  
   // Separate active workers by whether they have an active task
-  const workersWithActiveTasks = activeWorkers.filter(w => w.activeTask);
-  const workersWithoutActiveTasks = activeWorkers.filter(w => !w.activeTask);
+  const workersWithActiveTasks = activeWorkers.filter(w => w.activeTask).sort(sortByLastSeen);
+  const workersWithoutActiveTasks = activeWorkers.filter(w => !w.activeTask).sort(sortByLastSeen);
+  const sortedInactiveWorkers = [...inactiveWorkers].sort(sortByLastSeen);
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
@@ -256,13 +264,13 @@ export const Workers = () => {
           )}
           
           {/* Inactive Workers */}
-          {inactiveWorkers.length > 0 && (
+          {sortedInactiveWorkers.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold text-gray-600 mb-3">
-                ⏹️ Off Duty ({inactiveWorkers.length})
+                ⏹️ Off Duty ({sortedInactiveWorkers.length})
               </h3>
               <div className="space-y-3">
-                {inactiveWorkers.map((worker) => (
+                {sortedInactiveWorkers.map((worker) => (
                   <div key={worker.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">

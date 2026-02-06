@@ -52,6 +52,9 @@ app.post('/api/teams', async (req, res) => {
   }
 });
 
+// Helper function to delay execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Get workers with task counts
 app.post('/api/workers', async (req, res) => {
   try {
@@ -65,34 +68,66 @@ app.post('/api/workers', async (req, res) => {
     const response = await client.get('/workers');
     
     // Optionally enhance workers with task counts
-    // Note: This makes parallel API calls (one per worker) which may hit rate limits with many workers
+    // Note: To avoid rate limiting, we fetch tasks sequentially with delays
     // To skip task fetching, pass includeTaskCounts: false in request body
     if (!includeTaskCounts) {
       return res.json(response.data);
     }
     
-    // Fetch tasks for each worker in parallel (Promise.all)
-    const workersWithTasks = await Promise.all(
-      response.data.map(async (worker) => {
+    // Fetch tasks for each worker sequentially to avoid rate limiting
+    const workersWithTasks = [];
+    const DELAY_BETWEEN_REQUESTS = 100; // 100ms delay between requests
+    const MAX_RETRIES = 3;
+    
+    for (const worker of response.data) {
+      let retries = 0;
+      let success = false;
+      
+      while (retries < MAX_RETRIES && !success) {
         try {
           // Fetch tasks for this worker
           const tasksResponse = await client.get(`/workers/${worker.id}/tasks`);
-          return {
+          workersWithTasks.push({
             ...worker,
             tasks: tasksResponse.data || [],
             taskCount: tasksResponse.data?.length || 0
-          };
+          });
+          success = true;
+          
+          // Add delay between requests to avoid rate limiting
+          if (workersWithTasks.length < response.data.length) {
+            await delay(DELAY_BETWEEN_REQUESTS);
+          }
         } catch (error) {
-          // If fetching tasks fails, return worker with empty tasks
-          console.error(`Error fetching tasks for worker ${worker.id}:`, error.message);
-          return {
-            ...worker,
-            tasks: [],
-            taskCount: 0
-          };
+          if (error.response?.status === 429) {
+            // Rate limited - wait longer and retry
+            retries++;
+            const waitTime = Math.pow(2, retries) * 1000; // Exponential backoff
+            console.log(`Rate limited for worker ${worker.id}, waiting ${waitTime}ms before retry ${retries}/${MAX_RETRIES}`);
+            await delay(waitTime);
+          } else {
+            // Other error - return worker with empty tasks
+            console.error(`Error fetching tasks for worker ${worker.id}:`, error.message);
+            workersWithTasks.push({
+              ...worker,
+              tasks: [],
+              taskCount: 0
+            });
+            success = true;
+          }
         }
-      })
-    );
+      }
+      
+      // If all retries failed, add worker with empty tasks
+      if (!success) {
+        console.error(`Failed to fetch tasks for worker ${worker.id} after ${MAX_RETRIES} retries`);
+        workersWithTasks.push({
+          ...worker,
+          tasks: [],
+          taskCount: 0
+        });
+      }
+    }
     
     res.json(workersWithTasks);
   } catch (error) {

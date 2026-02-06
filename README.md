@@ -1,5 +1,9 @@
 # Onfleet Active Tasks Manager
 
+<div align="left">
+  <img src="https://github.com/alexanderbkl/onfleet-active-tasks/blob/main/assets/demo-1.png?raw=true" alt="Onfleet Dash Screenshot 1" width="400">
+</div>
+
 A full-stack application to manage and monitor Onfleet teams, workers, and tasks in real-time.
 
 ## 🚀 Features
